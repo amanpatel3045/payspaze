@@ -1,18 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button, MenuItem, Box, Typography
 } from '@mui/material';
+import { mockSendPayment } from '../utils/mockApi';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const PaymentDialog = ({ open, onClose }) => {
-
     const [form, setForm] = useState({
         to: '',
         from: '',
         amount: '',
         description: '',
     });
+    const [isValid, setIsValid] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [successOpen, setSuccessOpen] = useState(false);
+
+    useEffect(() => {
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.to);
+        const amountValid = parseFloat(form.amount) > 0;
+        setIsValid(emailValid && amountValid && form.from);
+    }, [form]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,11 +34,31 @@ const PaymentDialog = ({ open, onClose }) => {
             }
             const numberValue = Number(value);
             if (numberValue < 0) {
-                return;
+                return; // block negative
             }
         }
 
         setForm({ ...form, [name]: value });
+    };
+
+    const handleSubmit = () => {
+        setLoading(true);
+        setErrorMsg('');
+        mockSendPayment(form)
+            .then((res) => {
+                setLoading(false);
+                setSuccessOpen(true);
+            })
+            .catch((err) => {
+                setLoading(false);
+                if (err.status === 400) {
+                    setErrorMsg(err.message || 'Bad request');
+                } else if (err.status === 401) {
+                    setErrorMsg(err.message || 'Unauthorized Access');
+                } else {
+                    setErrorMsg(err.message || 'Server error. Please try later.');
+                }
+            });
     };
 
     return (
@@ -38,7 +68,7 @@ const PaymentDialog = ({ open, onClose }) => {
                 onClose={onClose}
                 fullWidth
                 maxWidth="sm"
-
+            
             >
                 <DialogTitle sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     Enter Payment Details
@@ -54,6 +84,7 @@ const PaymentDialog = ({ open, onClose }) => {
                             type="email"
                             required
                             fullWidth
+                            error={!!errorMsg && form.to === ''}
                         />
                         <TextField
                             select
@@ -73,6 +104,7 @@ const PaymentDialog = ({ open, onClose }) => {
                             value={form.amount}
                             onChange={handleChange}
                             type="number"
+                            inputProps={{ min: 0.01, step: 'any' }}
                             required
                             fullWidth
                         />
@@ -85,22 +117,29 @@ const PaymentDialog = ({ open, onClose }) => {
                             rows={3}
                             fullWidth
                         />
+                        {errorMsg && (
+                            <Typography color="error" variant="body2" mt={1}>
+                                {errorMsg}
+                            </Typography>
+                        )}
                     </Box>
                 </DialogContent>
 
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button variant="outlined">
+                    <Button onClick={onClose} variant="outlined" disabled={loading}>
                         Cancel
                     </Button>
                     <Button
+                        onClick={handleSubmit}
                         variant="contained"
+                        disabled={!isValid || loading}
                     >
-                        Submit
+                        {loading ? 'Processing...' : 'Submit'}
                     </Button>
                 </DialogActions>
             </Dialog>
 
-
+            {/* Success Dialog */}
             <Dialog
                 open={successOpen}
                 onClose={() => setSuccessOpen(false)}
@@ -129,6 +168,7 @@ const PaymentDialog = ({ open, onClose }) => {
                     <Button
                         variant="contained"
                         color="success"
+                        onClick={() => setSuccessOpen(false)}
                         sx={{ borderRadius: 2, px: 4 }}
                     >
                         OK

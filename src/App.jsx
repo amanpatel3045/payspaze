@@ -1,12 +1,15 @@
 import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
 import './App.css'
-import { Button, Box } from '@mui/material';
-import PaymentDialog from './components/PaymentDialog';
 
+
+import { Button, Box, Typography } from '@mui/material';
+import PaymentDialog from './components/PaymentDialog';
 
 function App() {
   const [open, setOpen] = useState(false);
-  return (
+ return (
     <Box
       sx={{
         minHeight: '100vh',
@@ -14,10 +17,11 @@ function App() {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        // bgcolor: '#ffffff',
         px: 2,
       }}
     >
-
+    
       <Button
         variant="contained"
         size="large"
