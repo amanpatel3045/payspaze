@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import './App.css'
 import { Button, Box } from '@mui/material';
+import PaymentDialog from './components/PaymentDialog';
 
 
 function App() {
   const [open, setOpen] = useState(false);
- return (
+  return (
     <Box
       sx={{
         minHeight: '100vh',
@@ -16,7 +17,7 @@ function App() {
         px: 2,
       }}
     >
-    
+
       <Button
         variant="contained"
         size="large"
@@ -25,6 +26,7 @@ function App() {
       >
         Make Payment
       </Button>
+      <PaymentDialog open={open} onClose={() => setOpen(false)} />
     </Box>
   );
 }
