@@ -7,6 +7,30 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const PaymentDialog = ({ open, onClose }) => {
 
+    const [form, setForm] = useState({
+        to: '',
+        from: '',
+        amount: '',
+        description: '',
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'amount') {
+            if (value === '') {
+                setForm({ ...form, amount: '' });
+                return;
+            }
+            const numberValue = Number(value);
+            if (numberValue < 0) {
+                return;
+            }
+        }
+
+        setForm({ ...form, [name]: value });
+    };
+
     return (
         <>
             <Dialog
@@ -25,6 +49,8 @@ const PaymentDialog = ({ open, onClose }) => {
                         <TextField
                             label="To (Email)"
                             name="to"
+                            value={form.to}
+                            onChange={handleChange}
                             type="email"
                             required
                             fullWidth
@@ -33,6 +59,8 @@ const PaymentDialog = ({ open, onClose }) => {
                             select
                             label="From (Currency)"
                             name="from"
+                            value={form.from}
+                            onChange={handleChange}
                             required
                             fullWidth
                         >
@@ -42,6 +70,8 @@ const PaymentDialog = ({ open, onClose }) => {
                         <TextField
                             label="Amount"
                             name="amount"
+                            value={form.amount}
+                            onChange={handleChange}
                             type="number"
                             required
                             fullWidth
@@ -49,6 +79,8 @@ const PaymentDialog = ({ open, onClose }) => {
                         <TextField
                             label="Description (Optional)"
                             name="description"
+                            value={form.description}
+                            onChange={handleChange}
                             multiline
                             rows={3}
                             fullWidth
